@@ -1,0 +1,6 @@
+{
+  "domain": "prod-meetlocal-client-6e37b7265321.herokuapp.com",
+  "stripe": {
+    "plans": []
+  }
+}

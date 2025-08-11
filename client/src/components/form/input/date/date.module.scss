@@ -1,0 +1,30 @@
+.date {
+  
+  position: relative;
+  width: 100%;
+  z-index: 2;
+
+  &:last-of-type {
+
+    margin-bottom: 0;
+
+  }
+
+  > div:first-of-type {
+
+    margin-top: -$scale5;
+
+  }
+  
+  input {
+
+    margin-bottom: 0;
+
+  }
+
+  span {
+
+    width: 2em !important;
+
+  }
+}

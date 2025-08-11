@@ -1,0 +1,27 @@
+.group {
+
+  margin-bottom: $scale;
+
+}
+
+.fieldset {
+
+  position: relative;
+  margin-bottom: $scale;
+  background: lighten($c-slate-100, 3%);
+  padding: $scale;
+  border-radius: $radius;
+  border: 1px dotted $c-border;
+
+}
+
+:global(.dark) {
+
+  .fieldset {
+
+    color: white;
+    background: lighten($c-slate-800, 3%);
+    border-color: $c-slate-600;
+
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "invalid_id": "Bitte gib eine Job-ID an",
+  "removed": "Job {{id}} wurde aus der Warteschlange entfernt",
+  "reminder_event": {
+    "subject": "🕒 Dein Event-Plan & Infos für morgen!",
+    "body": "Hi {{participantFirstName}},\n\nDein Event findet morgen – {{eventDateFormatted}} – statt, und wir freuen uns riesig, Dich dabei zu haben!\n\nHier findest Du Deinen persönlichen Zeitplan, Infos zu Deinem Team und alles, was Du brauchst, um das Event voll zu genießen.\n\n🗓 <strong>Event-Details</strong>\nDatum: {{eventDateFormatted}}\nStadt: {{cityName}}\nEvent-Zeit: {{startTime}} – {{endTime}}\nTagline: {{eventTagline}}\n\n\n\n👥 <strong>Dein Team & Deine Gruppe</strong>\nPartner: {{teamPartnerName}}\nAltersgruppe: {{ageGroup}}\n\n\n\n📍 <strong>Dein Bar-Rotationsplan</strong>\nDu wirst 3 verschiedene Bars besuchen und alle 1,5 Stunden wechseln:\n\n{{group}}\n\n\n\n<em>Hinweis:</em> Bitte sei pünktlich an jedem Standort. <strong>Deine Gruppe rotiert gemeinsam.</strong>\n\n\n\n🕒 Die Matching-Phase beginnt um: {{matchingPhaseTime}}\nDas Event endet um: {{endTime}}\n\nWenn Du Fragen hast oder Hilfe brauchst, antworte einfach auf diese Nachricht oder kontaktiere unser Support-Team.\n\nWir freuen uns, Dich dort zu sehen!\n\n",
+    "button": "Meetlocal-Dashboard öffnen",
+    "group": "\nSlot {{index}} – {{slotStartTime}} bis {{slotEndTime}}\n📍 {{barName}}\n📍 {{barAddress}}\n\n",
+    "closing": "Liebe Grüße,"
+  },
+  "reminder_event_swipe": {
+    "subject": "🕒 Die Matching-Phase hat begonnen!",
+    "body": "Hi {{participantFirstName}},\n\nKleiner Hinweis – die <strong>Matching-Phase</strong> für Dein Event in {{city}} - ({{eventDateFormatted}}) hat jetzt offiziell begonnen!\n\nDas bedeutet, Du kannst Dich jetzt einloggen und Deine potenziellen Matches anschauen.\n\nUm Deine Matches zu sehen, logge Dich bitte in Deinen Meetlocal-Account ein.\n\nWenn Du Fragen hast, antworte einfach oder melde Dich bei unserem Support-Team.\n\n",
+    "button": "Matches im Dashboard ansehen",
+    "closing": "Liebe Grüße"
+  },
+  "reminder_event_end": {
+    "subject": "⏳ Nur noch 24 Stunden, um Dein Match zu finden!",
+    "body": "Hi {{participantFirstName}},\n\nNur eine kurze Erinnerung – Du hast noch <strong>24 Stunden</strong>, um Dein perfektes Match für das Event in {{city}} – ({{eventDateFormatted}}) zu finden.\n\nEinige offene Matches warten noch auf Dich. Verpasse nicht die Chance, Dich zu verbinden! 💖\n\nMelde Dich jetzt in Deinem Meetlocal-Dashboard an und vervollständige Deine Matches.\n\nWenn Du Fragen hast, antworte einfach auf diese E-Mail oder kontaktiere unser Support-Team.\n\n",
+    "button": "Zum Meetlocal-Dashboard",
+    "closing": "Liebe Grüße,"
+  }
+}

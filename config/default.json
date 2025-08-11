@@ -1,0 +1,332 @@
+{
+ "domain": "http://localhost:3000",
+ "stripe": {
+  "plans": [
+   {
+    "id": "free",
+    "name": "Free",
+    "price": 0,
+    "interval": "year",
+    "currency": {
+     "name": "eur",
+     "symbol": "€"
+    },
+    "features": [
+     {
+      "name": "Awesome feature",
+      "checked": true
+     },
+     {
+      "name": "Another amazing feature",
+      "checked": true
+     },
+     {
+      "name": "The best feature ever",
+      "checked": true
+     }
+    ]
+   },
+   {
+    "id": "price_1QEw43GWVCygqvfctCJaH6xj",
+    "name": "FinestSites Unlimited (year)",
+    "price": 340,
+    "interval": "year",
+    "currency": {
+     "name": "eur",
+     "symbol": "€"
+    },
+    "features": [
+     {
+      "name": "Awesome feature",
+      "checked": true
+     },
+     {
+      "name": "Another amazing feature",
+      "checked": true
+     },
+     {
+      "name": "The best feature ever",
+      "checked": true
+     }
+    ]
+   },
+   {
+    "id": "price_1QEw43GWVCygqvfc2CgY9BXT",
+    "name": "FinestSites Unlimited (monthly)",
+    "price": 34,
+    "interval": "month",
+    "currency": {
+     "name": "eur",
+     "symbol": "€"
+    },
+    "features": [
+     {
+      "name": "Awesome feature",
+      "checked": true
+     },
+     {
+      "name": "Another amazing feature",
+      "checked": true
+     },
+     {
+      "name": "The best feature ever",
+      "checked": true
+     }
+    ]
+   },
+   {
+    "id": "price_1QEw23GWVCygqvfcj7FG2rx1",
+    "name": "FinestSites Premium (monthly)",
+    "price": 24,
+    "interval": "month",
+    "currency": {
+     "name": "eur",
+     "symbol": "€"
+    },
+    "features": [
+     {
+      "name": "Awesome feature",
+      "checked": true
+     },
+     {
+      "name": "Another amazing feature",
+      "checked": true
+     },
+     {
+      "name": "The best feature ever",
+      "checked": true
+     }
+    ]
+   },
+   {
+    "id": "price_1QEw23GWVCygqvfcHfdd4GhM",
+    "name": "FinestSites Premium (year)",
+    "price": 240,
+    "interval": "year",
+    "currency": {
+     "name": "eur",
+     "symbol": "€"
+    },
+    "features": [
+     {
+      "name": "Awesome feature",
+      "checked": true
+     },
+     {
+      "name": "Another amazing feature",
+      "checked": true
+     },
+     {
+      "name": "The best feature ever",
+      "checked": true
+     }
+    ]
+   },
+   {
+    "id": "price_1QEw0bGWVCygqvfcPVESuJxH",
+    "name": "FinestSites Starter (monthly)",
+    "price": 17,
+    "interval": "month",
+    "currency": {
+     "name": "eur",
+     "symbol": "€"
+    },
+    "features": [
+     {
+      "name": "Awesome feature",
+      "checked": true
+     },
+     {
+      "name": "Another amazing feature",
+      "checked": true
+     },
+     {
+      "name": "The best feature ever",
+      "checked": true
+     }
+    ]
+   },
+   {
+    "id": "price_1QEw04GWVCygqvfcPMaB0dEU",
+    "name": "FinestSites Starter (year)",
+    "price": 170,
+    "interval": "year",
+    "currency": {
+     "name": "eur",
+     "symbol": "€"
+    },
+    "features": [
+     {
+      "name": "Awesome feature",
+      "checked": true
+     },
+     {
+      "name": "Another amazing feature",
+      "checked": true
+     },
+     {
+      "name": "The best feature ever",
+      "checked": true
+     }
+    ]
+   },
+   {
+    "id": "price_1Px3ujGWVCygqvfcvWcY26aM",
+    "name": "Unlimited (1-year)",
+    "price": 360,
+    "interval": "year",
+    "currency": {
+     "name": "eur",
+     "symbol": "€"
+    },
+    "features": [
+     {
+      "name": "Awesome feature",
+      "checked": true
+     },
+     {
+      "name": "Another amazing feature",
+      "checked": true
+     },
+     {
+      "name": "The best feature ever",
+      "checked": true
+     }
+    ]
+   },
+   {
+    "id": "price_1Px3uIGWVCygqvfcZUsiOLDT",
+    "name": "Premium (1-year)",
+    "price": 240,
+    "interval": "year",
+    "currency": {
+     "name": "eur",
+     "symbol": "€"
+    },
+    "features": [
+     {
+      "name": "Awesome feature",
+      "checked": true
+     },
+     {
+      "name": "Another amazing feature",
+      "checked": true
+     },
+     {
+      "name": "The best feature ever",
+      "checked": true
+     }
+    ]
+   },
+   {
+    "id": "price_1Px3tzGWVCygqvfcQ0VkhP68",
+    "name": "Starter (1-year)",
+    "price": 170,
+    "interval": "year",
+    "currency": {
+     "name": "eur",
+     "symbol": "€"
+    },
+    "features": [
+     {
+      "name": "Awesome feature",
+      "checked": true
+     },
+     {
+      "name": "Another amazing feature",
+      "checked": true
+     },
+     {
+      "name": "The best feature ever",
+      "checked": true
+     }
+    ]
+   },
+   {
+    "id": "price_1Px3tbGWVCygqvfcwbzRZq0t",
+    "name": "Unlimited (monthly)",
+    "price": 36,
+    "interval": "month",
+    "currency": {
+     "name": "eur",
+     "symbol": "€"
+    },
+    "features": [
+     {
+      "name": "Awesome feature",
+      "checked": true
+     },
+     {
+      "name": "Another amazing feature",
+      "checked": true
+     },
+     {
+      "name": "The best feature ever",
+      "checked": true
+     }
+    ]
+   }
+  ]
+ },
+ "email": {
+    "user_verification": true,
+    "domain": "mail.meetlocal.io",
+    "host": "api.eu.mailgun.net",
+    "sender": "Meetlocal <postmaster@mail.meetlocal.io>",
+    "base_url": "https://api.mailgun.net/v3"
+ },
+ "permissions": {
+  "master": {
+   "master": true,
+   "owner": true,
+   "admin": true,
+   "user": true,
+   "developer": true
+  },
+  "owner": {
+   "master": false,
+   "owner": true,
+   "admin": true,
+   "user": true,
+   "developer": true
+  },
+  "admin": {
+   "master": false,
+   "owner": false,
+   "admin": true,
+   "user": true,
+   "developer": false
+  },
+  "user": {
+   "master": false,
+   "owner": false,
+   "admin": false,
+   "user": true,
+   "developer": false
+  },
+  "developer": {
+   "master": false,
+   "owner": false,
+   "admin": false,
+   "user": true,
+   "developer": true
+  }
+ },
+ "token": {
+  "duration": 604800
+ },
+ "throttle": {
+  "api": {
+   "max": 1000,
+   "windowMs": 3600000,
+   "headers": true,
+   "message": "Too many API calls from this IP, please try again soon."
+  },
+  "signin": {
+   "max": 5,
+   "windowMs": 300000,
+   "headers": true,
+   "message": "Too many sign in attempts, please try again in a few minutes."
+  }
+ }
+}

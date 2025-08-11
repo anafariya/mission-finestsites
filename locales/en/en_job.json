@@ -1,0 +1,23 @@
+{
+  "invalid_id": "Please provide a job ID",
+  "removed": "Job {{id}} removed from queue",
+  "reminder_event": {
+    "subject": "🕒 Your Event Schedule & Info for Tomorrow!",
+    "body": "Hi {{participantFirstName}},\n\nYour event is happening tomorrow – {{eventDateFormatted}}, and we're thrilled to welcome you!\n\nBelow is your personalized event schedule, team info, and everything you need to enjoy the experience.\n\n🗓 <strong>Event Details</strong>\nDate: {{eventDateFormatted}}\nCity: {{cityName}}\nEvent Time: {{startTime}} – {{endTime}}\nTagline: {{eventTagline}}\n\n\n\n👥 <strong>Your Team & Group</strong>\nPartner: {{teamPartnerName}}\nAge Group: {{ageGroup}}\n\n\n\n📍 <strong>Your Bar Rotation Schedule</strong>\nYou'll visit 3 different bars, switching every 1.5 hours:\n\n{{group}}\n\n\n\n<em>Note:</em> Please arrive on time to each location. <strong>Your group will rotate together.</strong>\n\n\n\n🕒 Matching Phase begins at: {{matchingPhaseTime}}\nEvent ends at: {{endTime}}\n\nIf you have questions or need help, feel free to reply or contact our support team.\n\nLooking forward to seeing you there!\n\n",
+    "button": "Open Meetlocal Dashboard",
+    "group": "\nSlot {{index}} – {{slotStartTime}} to {{slotEndTime}}\n📍 {{barName}}\n📍 {{barAddress}}\n\n",
+    "closing": "Cheers,"
+  },
+  "reminder_event_swipe": {
+    "subject": "🕒 Matching Phase Has Started!",
+    "body": "Hi {{participantFirstName}},\n\nJust a quick heads-up — the <strong>Matching Phase</strong> for your event in {{city}} - ({{eventDateFormatted}}) has officially started!\n\nThis means you can now log in and start viewing potential matches.\n\nTo view your matches, please login into your Meetlocal account.\n\nIf you have any questions, feel free to reply or reach out to our support team.\n\n",
+    "button": "View Matches in Dashboard",
+    "closing": "Cheers,"
+  },
+  "reminder_event_end": {
+    "subject": "⏳ Only 24 Hours Left to Find Your Match!",
+    "body": "Hi {{participantFirstName}},\n\nJust a quick reminder — you have <strong>24 hours left</strong> to find your perfect match for the event in {{city}} - ({{eventDateFormatted}}).\n\nYou still have some open matches waiting. Don’t miss your chance to connect! 💖\n\nLog in to your Meetlocal Dashboard and complete your matches now.\n\nIf you have any questions, feel free to reply or contact our support team.\n\n",
+    "button": "Go to Meetlocal Dashboard",
+    "closing": "Cheers,"
+  }
+}

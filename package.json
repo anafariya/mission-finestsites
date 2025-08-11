@@ -1,0 +1,62 @@
+{
+ "name": "gravity",
+ "plan": "mission-control",
+ "version": "1.6.9",
+ "description": "Manage users, view metrics, track events, collect feedback and log errors in one central dashboard",
+ "main": "server.js",
+ "engines": {
+  "node": "^20.10.0"
+ },
+ "dependencies": {
+  "@aws-sdk/client-s3": "^3.826.0",
+  "@aws-sdk/s3-request-presigner": "^3.826.0",
+  "axios": "^1.6.2",
+  "bcrypt": "^5.1.1",
+  "config": "^3.3.9",
+  "cors": "^2.8.5",
+  "dotenv": "^16.3.1",
+  "express": "^4.18.2",
+  "express-mongo-sanitize": "2.2.0",
+  "express-rate-limit": "^7.1.5",
+  "form-data": "^4.0.0",
+  "helmet": "^7.1.0",
+  "i18n": "^0.15.1",
+  "jsonwebtoken": "^9.0.2",
+  "lodash.escape": "^4.0.1",
+  "moment-timezone": "^0.6.0",
+  "mongodb": "6.9.0",
+  "mongoose": "8.6.4",
+  "mysql2": "3.11.3",
+  "node-cron": "^4.2.0",
+  "nodemailer": "^7.0.5",
+  "nodemailer-mailgun-transport": "^2.1.5",
+  "openai": "^5.8.2",
+  "stripe": "14.7.0",
+  "uuid": "^9.0.1"
+ },
+ "devDependencies": {
+  "concurrently": "^8.2.2",
+  "nodemon": "^3.0.2"
+ },
+ "scripts": {
+  "client": "cd client && npm start",
+  "server": "nodemon server.js",
+  "heroku-postbuild": "cd client && npm install && npm run build",
+  "dev": "concurrently --kill-others \"npm run client\" \"npm run server\""
+ },
+ "nodemonConfig": {
+  "ignore": [
+   "client/",
+   "config/",
+   "server.js",
+   "knexfile.js"
+  ]
+ },
+ "repository": {
+  "type": "git"
+ },
+ "author": "Kyle Gawley",
+ "license": "PRIVATE",
+ "private": true,
+ "homepage": "https://usegravity.app"
+}
