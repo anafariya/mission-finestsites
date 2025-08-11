@@ -87,7 +87,7 @@ cron.schedule('59 23 * * *', () => {
 // Run at 23:58 AM Europe/Berlin time every day
 // */5 * * * *
 // 00 23 * * *
-cron.schedule('*/5 * * * *', () => {
+cron.schedule('00 23 * * *', () => {
   const now = moment().tz('Europe/Berlin');
   console.log('Running AI Starting End Event Reminder job at:', now.format());
   runAIJobForEndEventReminder();

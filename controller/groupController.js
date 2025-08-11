@@ -12,38 +12,21 @@ const team = require('../model/team');
 exports.create = async function (req, res) {
   const data = req.body;
 
-  console.log('[GROUP CREATE] 🚀 Starting group creation');
-  console.log('[GROUP CREATE] 📄 Request body:', data);
-
   // Field-level validation with custom error messages
   utility.assert(data, ['event_id', 'group_members'] , 'Please check your required inputs again');
   
   try {
-    console.log('[GROUP CREATE] 🔍 Fetching team data for first team member');
     const teamData = await team.getById({ id: new mongoose.Types.ObjectId(data.group_members[0]) });
-    console.log('[GROUP CREATE] ✅ Team data received:', teamData);
     
     if (!teamData || teamData.length === 0) {
-      console.log('[GROUP CREATE] ❌ No team data found for team ID:', data.group_members[0]);
       return res.status(400).send({ error: 'Team not found' });
     }
     
     const ageGroup = teamData[0]?.age_group;
-    console.log('[GROUP CREATE] 🎯 Age group extracted:', ageGroup);
     
     if (!ageGroup) {
-      console.log('[GROUP CREATE] ❌ No age group found in team data');
       return res.status(400).send({ error: 'Team age group not found' });
     }
-    
-    console.log('[GROUP CREATE] 🔄 Calling group.add with data:', {
-      team_ids: data.group_members,
-      age_group: ageGroup,
-      method: 'assigned by Admin',
-      slot: Number(data.slot),
-      bar_id: data.bar_id,
-      group_name: data.group_name
-    });
     
     await group.add({
       group: {
@@ -60,14 +43,11 @@ exports.create = async function (req, res) {
       },
       eventId: data.event_id,
     });
-    
-    console.log('[GROUP CREATE] ✅ Group created successfully');
-  
+      
     return res.status(200).send({ 
         message: 'Success add the group' 
       })
   } catch (err) {
-    console.error('[GROUP CREATE] ❌ Error creating group:', err);
     return res.status(400).send({ error: err.message });
   }
 };
@@ -103,6 +83,40 @@ exports.update = async function (req, res) {
       eventId: data.event_id
     });
   
+    if(data.subject_email && data.body_email){
+      if (groupData){
+        let teamDatas = groupData.team_ids
+        for(const teamData of teamDatas){
+          let participantDatas = teamData.members;
+          for(const participantData of participantDatas){
+            if(participantData) {
+              const email = participantData.email
+              const rex = /^(?:[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+)*|'(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*')@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/
+              if (rex.test(email.toLowerCase())){
+
+                await mail.send({
+
+                  to: email,
+                  locale: 'de',
+                  template: 'template',
+                  subject: data.subject_email,
+                  content: { 
+                    body: `Hallo ${participantData.first_name},\n\n${data.body_email}`,
+                    closing: 'Beste grüße,',
+                    button: {
+                      url: process.env.CLIENT_URL,
+                      label: 'Zum Meetlocal-Dashboard'
+                    }
+                  }
+                })
+
+              }
+            }
+          }
+        }
+
+      }
+    }
     return res.status(200).send({ 
       message: 'Success update the group' 
     })
