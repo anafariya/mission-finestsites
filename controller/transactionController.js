@@ -34,7 +34,7 @@ exports.getByEventId = async function (req, res) {
       return {
         _id: dt._id,
         status: dt.status,
-        name: dt.user_id?.first_name ? `${dt.user_id?.first_name} ${dt.user_id?.last_name}` : dt.user_id.name,
+        name: `${dt.user_id?.first_name} ${dt.user_id?.last_name}`,
         user_id: dt.user_id?._id,
         age: utility.getAgeFromDate(dt.user_id?.date_of_birth),
         team_partner: dt.invited_user_id && (dt.invited_user_id?.first_name ? `${dt.invited_user_id?.first_name} ${dt.invited_user_id?.last_name}` : dt.invited_user_id?.name),

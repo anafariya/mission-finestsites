@@ -42,7 +42,7 @@ export function AppLayout(props){
       <main className={ Style.app }>
 
         <Header title={ props.title } />
-        { <props.children {...props.data }/> }
+        { props.children }
 
       </main>
     </Fragment>

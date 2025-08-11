@@ -101,7 +101,7 @@ export function Row(props){
             <td key={ index } className={ css }>
               {
                 value.map((dt, i) => {
-                  return <Badge text={ dt } color={ 'green' } className={ `${Style.badge} block`}/>
+                  return <Badge key={ i } text={ dt } color={ 'green' } className={ `${Style.badge} block`}/>
                 })
               }
               

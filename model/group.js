@@ -26,7 +26,7 @@ exports.add = async function ({ group, eventId }) {
     age_group: group.age_group,
     bar_id: new mongoose.Types.ObjectId(group.bar_id),
     team_ids: group.team_ids.map(id => new mongoose.Types.ObjectId(id)),
-    ...team.method && { method: team.method }
+    ...group.method && { method: group.method }
   });
 
   return await data.save();
@@ -75,29 +75,15 @@ exports.get = async function ({ eventId }) {
 * group.update()
 */
 exports.update = async function ({ group, eventId, id }) {
-  const data = await Group.findOneAndUpdate(
-    { _id: new mongoose.Types.ObjectId(id) },
-    {
-      event_id: new mongoose.Types.ObjectId(eventId),
-      group_name: group.group_name,
-      ...(group.age_group && { age_group: group.age_group }),
-      ...(group.bar_id && { bar_id: new mongoose.Types.ObjectId(group.bar_id) }),
-      ...(group.slot && { slot: group.slot }),
-      ...(group.team_ids && {
-        team_ids: group.team_ids.map(member => new mongoose.Types.ObjectId(member.id))
-      }),
-      method: 'assigned by Admin'
-    },
-    { new: true }
-  )
-    .populate({
-      path: 'team_ids',
-      populate: {
-        path: 'members',
-        model: 'User',
-        select: 'first_name email'
-      }
-    });
+  const data = await Group.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(id) }, {
+    event_id: new mongoose.Types.ObjectId(eventId),
+    group_name: group.group_name,
+    ...group.age_group && { age_group: group.age_group},
+    ...group.bar_id && { bar_id: new mongoose.Types.ObjectId(group.bar_id) },
+    ...group.slot && { slot: group.slot },
+    ...group.team_ids && { team_ids: group.team_ids.map(member => new mongoose.Types.ObjectId(member.id)) },
+    method: 'assigned by Admin'
+  }, { new: true });
 
   return data;
 };

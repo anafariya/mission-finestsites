@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const s3 = require('../helper/s3');
 const path = require('path');
 const user = require('../model/user');
-const mail = require('../helper/mail');
 
 /*
  * team.create()
@@ -64,36 +63,6 @@ exports.update = async function (req, res) {
       },
       eventId: data.event_id
     });
-    if(data.subject_email && data.body_email){
-      for (const participant of data.team_members){
-        let participantData = await user.get({ _id: new mongoose.Types.ObjectId(participant) });
-
-        if(participantData) {
-          participantData = participantData[0]
-          const email = participantData.email
-          const rex = /^(?:[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+)*|'(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*')@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/
-          if (rex.test(email.toLowerCase())){
-      
-            await mail.send({
-                
-              to: email,
-              locale: 'de',
-              template: 'template',
-              subject: data.subject_email,
-              content: { 
-                body: `Hallo ${participantData.first_name || participantData.name},\n\n${data.body_email}`,
-                closing: 'Beste grüße,',
-                button: {
-                  url: process.env.CLIENT_URL,
-                  label: 'Zum Meetlocal-Dashboard'
-                }
-              }
-            })
-      
-          }
-        }
-      }
-    }
   
     return res.status(200).send({ 
       message: 'Success update the team' 
