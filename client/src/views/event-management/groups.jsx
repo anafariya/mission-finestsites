@@ -163,8 +163,6 @@ function FetchEvents(props){
             capacityStatus = '⚠️ 90%+ Full';
           }
 
-          console.log(dt);
-
                         return {
                 ...dt,
                 city: dt.city.name,

@@ -36,6 +36,33 @@ export function TeamsLists() {
     });
   }
 
+  function cancelTeam(data, callback){
+    // Check if we have the required data
+    if (!data._id) {
+    
+      return;
+    }
+    const apiUrl = `/api/event-management/cancel-team/${data._id}`;
+    viewContext.modal.show({
+      title: 'Cancel Team',
+      text: `Are you sure you want to cancel this team? All team members will be cancelled and receive vouchers. This action only affects participants in this specific team.`,
+      form: {},
+      buttonText: 'Cancel Team',
+      url: apiUrl,
+      method: 'PUT',
+      destructive: true,
+          }, (formData, response) => {
+        
+        if (response && (response.data || response.team_id)) {
+          // Refresh the teams list
+          setReload(prev => prev + 1);
+        }
+        if (callback) {
+          callback();
+        }
+      });
+  }
+
   return (
     <Animate>
       <Card title={`Teams for Event ID: ${id}`}>
@@ -56,6 +83,9 @@ export function TeamsLists() {
               },
               {
                 icon: 'eye', action: (data, i) =>  router(`/event-management/teams/${id}/${data._id}`), title: 'View'
+              },
+              {
+                icon: 'pause-circle', action: (data, i) =>  cancelTeam(data), title: 'Cancel Team', destructive: true
               },
             ],
           }}
