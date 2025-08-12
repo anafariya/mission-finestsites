@@ -26,7 +26,7 @@ exports.add = async function ({ group, eventId }) {
     age_group: group.age_group,
     bar_id: new mongoose.Types.ObjectId(group.bar_id),
     team_ids: group.team_ids.map(id => new mongoose.Types.ObjectId(id)),
-    ...group.method && { method: group.method }
+    ...team.method && { method: team.method }
   });
 
   return await data.save();

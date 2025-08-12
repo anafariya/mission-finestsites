@@ -37,25 +37,20 @@ export function EventGroupLists() {
     });
   }
 
-  function cancelGroup(data, callback){
+  function cancelData(data, callback){
 
     viewContext.modal.show({
-      title: 'Cancel Group',
-      text: `Are you sure you want to cancel ${data.group_name}? All group members will receive vouchers for future events.`,
+      title: 'Cancel',
+      text: `Are you sure you want to cancel ${data.group_name}?`,
       form: {},
-      buttonText: 'Cancel Group',
-      url: `/api/event-management/cancel-group/${data.id}`,
+      buttonText: 'Cancel Event',
+      url: `/api`,
       method: 'PUT',
       destructive: true,
-    }, (formData, response) => {
+    }, () => {
 
-      if (response && (response.data || response.group_id)) {
-        // Refresh the groups list
-        setReload(prev => prev + 1);
-      } 
-      if (callback) {
-        callback();
-      }
+      callback();
+
     });
   }
 
@@ -88,7 +83,7 @@ export function EventGroupLists() {
                 icon: 'edit', action: (data, i) =>  router(`/event-management/group/${id}/edit/${data.id}`), title: 'View'
               },
               { 
-                icon: 'pause-circle', action: (data, i) => cancelGroup(data), title: 'Cancel Group'
+                icon: 'pause-circle', action: (data, i) => cancelData(data), title: 'Cancel'
               },
               {
                 icon: 'eye', action: (data, i) =>  router(`/event-management/group/${id}/${data.id}`), title: 'View'

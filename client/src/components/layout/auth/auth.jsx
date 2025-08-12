@@ -16,7 +16,7 @@ export function AuthLayout(props){
   return (
     <main className={ Style.auth }>
       <AuthNav />
-      { props.children }
+      { <props.children {...props.data }/> }
     </main>
   );
 }

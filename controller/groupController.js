@@ -5,6 +5,7 @@ const s3 = require('../helper/s3');
 const path = require('path');
 const user = require('../model/user');
 const team = require('../model/team');
+const mail = require('../helper/mail');
 
 /*
  * group.create()
@@ -14,19 +15,9 @@ exports.create = async function (req, res) {
 
   // Field-level validation with custom error messages
   utility.assert(data, ['event_id', 'group_members'] , 'Please check your required inputs again');
-  
   try {
     const teamData = await team.getById({ id: new mongoose.Types.ObjectId(data.group_members[0]) });
-    
-    if (!teamData || teamData.length === 0) {
-      return res.status(400).send({ error: 'Team not found' });
-    }
-    
-    const ageGroup = teamData[0]?.age_group;
-    
-    if (!ageGroup) {
-      return res.status(400).send({ error: 'Team age group not found' });
-    }
+    console.log(teamData, 'teamdata');
     
     await group.add({
       group: {
@@ -35,7 +26,7 @@ exports.create = async function (req, res) {
             id: dt
           }
         }),
-        age_group: ageGroup,
+        age_group: teamData?.[0]?.age_group,
         method: 'assigned by Admin',
         slot: Number(data.slot),
         bar_id: data.bar_id,
@@ -43,7 +34,7 @@ exports.create = async function (req, res) {
       },
       eventId: data.event_id,
     });
-      
+  
     return res.status(200).send({ 
         message: 'Success add the group' 
       })
@@ -66,7 +57,7 @@ exports.update = async function (req, res) {
     utility.assert(data, ['event_id', 'group_members'] , 'Please check your required inputs again');
     const teamData = await team.get({ _id: new mongoose.Types.ObjectId(data.group_members[0]) });
     
-    await group.update({
+    const groupData = await group.update({
       id,
       group: {
         team_ids: data.group_members.map(dt => {
@@ -82,7 +73,7 @@ exports.update = async function (req, res) {
       },
       eventId: data.event_id
     });
-  
+
     if(data.subject_email && data.body_email){
       if (groupData){
         let teamDatas = groupData.team_ids
@@ -93,7 +84,7 @@ exports.update = async function (req, res) {
               const email = participantData.email
               const rex = /^(?:[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+)*|'(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*')@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/
               if (rex.test(email.toLowerCase())){
-
+              
                 await mail.send({
 
                   to: email,
@@ -109,14 +100,15 @@ exports.update = async function (req, res) {
                     }
                   }
                 })
-
+              
               }
             }
           }
         }
-
+    
       }
     }
+  
     return res.status(200).send({ 
       message: 'Success update the group' 
     })

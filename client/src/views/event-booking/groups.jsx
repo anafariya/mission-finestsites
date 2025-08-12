@@ -35,7 +35,7 @@ export function EventBooking(props){
               color: 'green'
             },
             {
-              value: 'Failed',
+              value: 'cancelled',
               color: 'red'
             },
             {

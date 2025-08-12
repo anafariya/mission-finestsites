@@ -7,14 +7,7 @@ export default defineConfig ({
 	plugins: [react(),jsconfigPaths()],
 	server: {
 		port: 5002,
-		open: '/',
-		proxy: {
-			'/api': {
-				target: 'http://localhost:5001',
-				changeOrigin: true,
-				secure: false
-			}
-		}
+		open: '/'
 	},
 	preview: {
 		port: 5002
