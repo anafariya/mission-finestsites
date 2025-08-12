@@ -2,7 +2,7 @@
   "development": {
     "server_url": "http://localhost:5001",
     "remote_server": "http://localhost:8080",
-    "remote_client": "http://localhost:8080"
+    "remote_client": "http://localhost:3000"
   },
   "production": {
     "server_url": "https://prod-meetlocal-admin-bdc95cf53a68.herokuapp.com",

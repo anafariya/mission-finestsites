@@ -8,7 +8,7 @@ const RegisteredParticipantSchema = new Schema({
   event_id: { type: Schema.Types.ObjectId, ref: 'EventManagement', required: true },
   first_name: { type: String },
   last_name: { type: String },
-  gender: { type: String, enum: ['Male', 'Female', 'diverse'], default: null },
+  gender: { type: String, enum: ['male', 'female', 'diverse'], default: null },
   date_of_birth: { type: Date },
   email: { type: String, required: true },
   status: {

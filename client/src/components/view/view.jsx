@@ -197,7 +197,7 @@ export function View(props){
         <Modal {...modal } /> }
 
         <Layout title={ props.title } data={ props.data }>
-          <props.display />
+          { props.display }
         </Layout>
 
     </ViewContext.Provider>
