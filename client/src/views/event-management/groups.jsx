@@ -54,6 +54,27 @@ export function EventGroups(props){
       setReload(prev => prev + 1);
     });
   }
+
+  function cancelAllParticipants(data, callback){
+
+    viewContext.modal.show({
+      title: 'Cancel All Participants',
+      text: `Are you sure you want to cancel ALL participants for this event in ${data.city}? Vouchers will be issued if cancelled more than 24 hours in advance.`,
+      form: {
+        type: {
+          type: 'hidden',
+          value: 'event'
+        },
+      },
+      buttonText: 'Cancel All Participants',
+      url: `/api/event-management/cancel-participants/${data._id}`,
+      method: 'POST',
+      destructive: true,
+    }, () => {
+
+      setReload(prev => prev + 1);
+    });
+  }
   
   return (
     <Animate>
@@ -129,6 +150,10 @@ export function EventGroups(props){
               { icon: 'columns', action: (data, i) => router(`/event-management/teams/${data._id}`), title: 'All Teams' },
               { icon: 'grid', action: (data, i) => router(`/event-management/group/${data._id}`), title: 'All Groups' },
               { icon: 'message-circle', action: (data, i) => router(`/event-management/participant-messages/${data._id}`), title: 'Participant Messages' },
+              { icon: 'user-x', action: (data, i) => cancelAllParticipants(data), title: 'Cancel All Participants', condition: {
+                col: 'status',
+                value: 'Published'
+              }},
             ],
           }}
         />

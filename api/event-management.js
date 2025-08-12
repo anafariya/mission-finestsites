@@ -26,4 +26,6 @@ api.get('/api/event-management/participant-messages/:eventId', auth.verify('mast
 
 api.put('/api/event-management/archive-chat/:chatId', auth.verify('master'), use(eventManagementController.archiveChat));
 
+api.post('/api/event-management/cancel-participants/:id', auth.verify('master'), use(eventManagementController.cancelAllParticipants));
+
 module.exports = api;

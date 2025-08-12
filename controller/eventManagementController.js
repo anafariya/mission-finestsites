@@ -7,8 +7,11 @@ const utility = require('../helper/utility');
 const mongoose = require('mongoose');
 const s3 = require('../helper/s3');
 const path = require('path');
+const moment = require('moment-timezone');
 const mail = require('../helper/mail');
 const registeredParticipant = require('../model/registered-participant');
+const stripe = require('../../server-finestsites/model/stripe');
+const transaction = require('../model/transaction');
 
 /*
  * event.get()
@@ -225,8 +228,169 @@ exports.cancel = async function (req, res) {
   try {
     utility.validate(id);
     await event.cancel({ id: new mongoose.Types.ObjectId(id), isCanceled });
-    return res.status(200).send({ message: `Event canceled` });
+
+    // If admin cancels the event, also cancel all active registrations,
+    // issue vouchers when eligible (>24h before start), and send emails
+    if (isCanceled) {
+      try {
+        const eventId = id;
+        const eventData = await event.getById({ id: new mongoose.Types.ObjectId(eventId) });
+        utility.assert(eventData, 'Event not found');
+
+        const eventDateTime = moment.tz(
+          `${eventData.date.toISOString().split('T')[0]} ${eventData.start_time}`,
+          'YYYY-MM-DD HH:mm',
+          'Europe/Berlin'
+        );
+        const nowBerlin = moment.tz('Europe/Berlin');
+        const hoursUntilEvent = eventDateTime.diff(nowBerlin, 'hours', true);
+
+        // Active registrations for this event
+        let registrations = await mongoose.model('RegisteredParticipant').find({
+          event_id: new mongoose.Types.ObjectId(eventId),
+          status: 'registered',
+          $or: [{ is_cancelled: false }, { is_cancelled: { $exists: false } }]
+        }).populate('user_id');
+
+        if (!registrations.length) {
+          // Extra diagnostics to understand data shape
+          const totalForEvent = await mongoose.model('RegisteredParticipant').countDocuments({
+            event_id: new mongoose.Types.ObjectId(eventId)
+          });
+          const totalRegistered = await mongoose.model('RegisteredParticipant').countDocuments({
+            event_id: new mongoose.Types.ObjectId(eventId),
+            status: 'registered'
+          });
+          const totalActiveRegistered = await mongoose.model('RegisteredParticipant').countDocuments({
+            event_id: new mongoose.Types.ObjectId(eventId),
+            status: 'registered',
+            $or: [{ is_cancelled: false }, { is_cancelled: { $exists: false } }]
+          });
+
+          const sample = await mongoose.model('RegisteredParticipant')
+            .find({ event_id: new mongoose.Types.ObjectId(eventId) })
+            .limit(3).lean();
+
+          // Fallback: use admin model aggregator to fetch active registered participants
+          try {
+            const agg = await registeredParticipant.getRegistered({ event_id: new mongoose.Types.ObjectId(eventId), isValid: true });
+
+            // Normalize aggregated results to mimic populated shape
+            registrations = agg.map(a => ({
+              _id: a._id,
+              user_id: a.user_id, // raw ObjectId
+              email: a.email,
+              first_name: a.first_name,
+              last_name: a.last_name,
+              __agg: true,
+            }));
+          } catch (aggErr) {
+            console.error('❌ Fallback aggregator failed:', aggErr);
+          }
+        }
+
+        let emailsSent = 0;
+        let vouchersCreated = 0;
+        const eligibleForVoucher = hoursUntilEvent > 24;
+        for (const registration of registrations) {
+          try {
+
+            // Mark registration as cancelled
+            await mongoose.model('RegisteredParticipant').findByIdAndUpdate(registration._id, {
+              status: 'canceled',
+              is_cancelled: true,
+              cancel_date: new Date()
+            });
+
+            const userData = registration.user_id && registration.user_id.email ? registration.user_id : {
+              _id: registration.user_id,
+              email: registration.email,
+              first_name: registration.first_name,
+              last_name: registration.last_name,
+              locale: 'de'
+            };
+            let voucherData = null;
+
+            // Create voucher if eligible
+            if (eligibleForVoucher) {
+              try {
+                const userTransaction = await mongoose.model('Transaction').findOne({
+                  user_id: new mongoose.Types.ObjectId(userData._id),
+                  event_id: new mongoose.Types.ObjectId(eventId),
+                  type: 'Register Event'
+                });
+
+                if (userTransaction && userTransaction.amount > 0) {
+                  voucherData = await stripe.createCoupon({
+                    userId: userData._id,
+                    eventName: eventData.city.name,
+                    amount: userTransaction.amount
+                  });
+                  vouchersCreated++;
+                }
+              } catch (voucherError) {
+                console.error('❌ Failed to create voucher:', voucherError);
+              }
+            }
+
+            // Send cancellation email
+            try {
+              const emailTemplate = voucherData ? 'event_cancelled_with_voucher' : 'event_cancelled_no_voucher';
+              const eventDateFormatted = moment(eventData.date).tz('Europe/Berlin').format('DD.MM.YYYY');
+
+              await mail.send({
+                to: userData.email,
+                locale: userData.locale || 'de',
+                template: emailTemplate,
+                subject: voucherData ? 'Event abgesagt - Gutschein erhalten' : 'Event abgesagt',
+                // Ensure template greeting picks up the user's name
+                name: userData.first_name || userData.name,
+                content: {
+                  first_name: userData.first_name,
+                  event_name: eventData.city.name,
+                  event_date: eventDateFormatted,
+                  voucher_code: voucherData?.id,
+                  voucher_amount: voucherData ? `€${(voucherData.amount_off / 100).toFixed(2)}` : null,
+                  voucher_expiry: voucherData?.redeem_by ? moment.unix(voucherData.redeem_by).format('DD.MM.YYYY') : null,
+                  body: voucherData ?
+                    `Ihr Event "${eventData.city.name}" am ${eventDateFormatted} wurde leider abgesagt. Da die Absage mehr als 24 Stunden vor dem Event erfolgte, haben wir einen Gutschein für Sie erstellt.` :
+                    `Ihr Event "${eventData.city.name}" am ${eventDateFormatted} wurde leider abgesagt. Da die Absage weniger als 24 Stunden vor dem Event erfolgte, kann kein Gutschein ausgestellt werden.`,
+                  closing: 'Mit freundlichen Grüßen',
+                  button: voucherData ? {
+                    url: process.env.CLIENT_URL || 'https://app.meetlocal.de',
+                    label: 'Gutschein einlösen'
+                  } : null
+                }
+              });
+              emailsSent++;
+            } catch (emailError) {
+              console.error('❌ Failed to send cancellation email:', emailError);
+            }
+          } catch (processError) {
+            console.error('❌ Failed to process registration during event cancel:', processError);
+          }
+        }
+
+        return res.status(200).send({
+          message: `Event canceled. ${registrations.length} registrations processed`,
+          data: {
+            cancelled_count: registrations.length,
+            emails_sent: emailsSent,
+            vouchers_created: vouchersCreated,
+            hours_until_event: hoursUntilEvent.toFixed(1),
+            eligible_for_voucher: eligibleForVoucher
+          }
+        });
+      } catch (bulkError) {
+        console.error('❌ Admin cancel bulk process failed:', bulkError);
+        // Still return cancelled state even if bulk process had issues
+        return res.status(200).send({ message: `Event canceled (participant processing had errors)` });
+      }
+    }
+
+    return res.status(200).send({ message: `Event ${isCanceled ? 'canceled' : 'reactivated'}` });
   } catch (err) {
+    console.error('❌ ADMIN EVENT CANCEL failed before processing:', err);
     return res.status(400).send({ error: err.message });
   }
 };
@@ -321,5 +485,161 @@ exports.archiveChat = async (req, res) => {
   } catch (err) {
     console.error('Failed to get event chats:', err);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/*
+ * eventManagement.cancelAllParticipants()
+ * Cancel all participants for an event/group/team (admin function)
+ */
+exports.cancelAllParticipants = async function (req, res) {
+  try {
+    const eventId = req.params.id;
+    const { type = 'event', groupId, teamId } = req.body; // type: 'event', 'group', 'team'
+
+    utility.assert(eventId, 'Event ID is required');
+
+    // Get event data
+    const eventData = await event.getById({ id: new mongoose.Types.ObjectId(eventId) });
+    utility.assert(eventData, 'Event not found');
+
+    // Calculate hours until event start
+    const eventDateTime = moment.tz(`${eventData.date.toISOString().split('T')[0]} ${eventData.start_time}`, 'YYYY-MM-DD HH:mm', 'Europe/Berlin');
+    const nowBerlin = moment.tz('Europe/Berlin');
+    const hoursUntilEvent = eventDateTime.diff(nowBerlin, 'hours', true);
+
+    // Build query based on cancellation type
+    let query = {
+      event_id: new mongoose.Types.ObjectId(eventId),
+      status: 'registered',
+      $or: [{ is_cancelled: false }, { is_cancelled: { $exists: false } }]
+    };
+
+    // RegisteredParticipant does not store group_id or team_id.
+    // For group/team cancellation, resolve user_ids via groups/teams membership and filter by user_id.
+    if (type === 'group' && groupId) {
+      const grp = await mongoose.model('Group').findOne({ _id: new mongoose.Types.ObjectId(groupId) }).populate({
+        path: 'team_ids',
+        populate: { path: 'members', model: 'User', select: '_id' }
+      });
+      const memberIds = grp?.team_ids?.flatMap(t => t.members?.map(m => m._id)) || [];
+      if (memberIds.length === 0) {
+        return res.status(404).send({ message: 'No members found in this group' });
+      }
+      query.user_id = { $in: memberIds.map(id => new mongoose.Types.ObjectId(id)) };
+    } else if (type === 'team' && teamId) {
+      const teamDoc = await mongoose.model('Team').findOne({ _id: new mongoose.Types.ObjectId(teamId) }).populate('members', '_id');
+      const memberIds = teamDoc?.members?.map(m => m._id) || [];
+      if (memberIds.length === 0) {
+        return res.status(404).send({ message: 'No members found in this team' });
+      }
+      query.user_id = { $in: memberIds.map(id => new mongoose.Types.ObjectId(id)) };
+    }
+
+    // Find all registrations to cancel
+    const registrations = await registeredParticipant.find(query).populate('user_id');
+    
+    if (registrations.length === 0) {
+      return res.status(404).send({ message: 'No active registrations found' });
+    }
+
+    let emailsSent = 0;
+    let vouchersCreated = 0;
+    const eligibleForVoucher = hoursUntilEvent > 24;
+
+    // Process each registration
+    for (const registration of registrations) {
+      try {
+        // Mark as cancelled first
+        await registeredParticipant.findByIdAndUpdate(registration._id, {
+          status: 'canceled',
+          is_cancelled: true,
+          cancel_date: new Date()
+        });
+
+        const userData = registration.user_id;
+        let voucherData = null;
+
+        // Generate voucher if eligible (>24 hours before event)
+        if (eligibleForVoucher) {          
+          try {
+            // Find the transaction to get the amount
+            const userTransaction = await mongoose.model('Transaction').findOne({
+              user_id: new mongoose.Types.ObjectId(userData._id),
+              event_id: new mongoose.Types.ObjectId(eventId),
+              type: 'Register Event'
+            });
+
+            if (userTransaction && userTransaction.amount > 0) {
+              // Create Stripe voucher
+              voucherData = await stripe.createCoupon({
+                userId: userData._id,
+                eventName: eventData.city.name,
+                amount: userTransaction.amount
+              });
+
+              vouchersCreated++;
+            } 
+          } catch (voucherError) {
+            console.error(`❌ Failed to create voucher for ${userData.email}:`, voucherError);
+          }
+        }
+
+        // Send cancellation email
+        try {
+          const emailTemplate = voucherData ? 'event_cancelled_with_voucher' : 'event_cancelled_no_voucher';
+          const eventDateFormatted = moment(eventData.date).tz('Europe/Berlin').format('DD.MM.YYYY');
+
+          await mail.send({
+            to: userData.email,
+            locale: userData.locale || 'de',
+            template: emailTemplate,
+            subject: voucherData ? 
+              'Event abgesagt - Gutschein erhalten' : 
+              'Event abgesagt',
+            content: {
+              first_name: userData.first_name,
+              event_name: eventData.city.name,
+              event_date: eventDateFormatted,
+              voucher_code: voucherData?.id,
+              voucher_amount: voucherData ? `€${(voucherData.amount_off / 100).toFixed(2)}` : null,
+              body: voucherData ? 
+                `Ihr Event "${eventData.city.name}" am ${eventDateFormatted} wurde leider abgesagt. Da die Absage mehr als 24 Stunden vor dem Event erfolgte, haben wir einen Gutschein für Sie erstellt.` :
+                `Ihr Event "${eventData.city.name}" am ${eventDateFormatted} wurde leider abgesagt. Da die Absage weniger als 24 Stunden vor dem Event erfolgte, kann kein Gutschein ausgestellt werden.`,
+              closing: 'Mit freundlichen Grüßen',
+              button: voucherData ? {
+                url: process.env.CLIENT_URL || 'https://app.meetlocal.de',
+                label: 'Gutschein einlösen'
+              } : null
+            }
+          });
+          emailsSent++;
+
+        } catch (emailError) {
+          console.error(`❌ Failed to send email to ${userData.email}:`, emailError);
+        }
+      } catch (processError) {
+        console.error(`❌ Failed to process registration ${registration._id}:`, processError);
+      }
+    }
+    return res.status(200).send({
+      message: `Successfully cancelled ${registrations.length} registrations`,
+      data: {
+        cancelled_count: registrations.length,
+        emails_sent: emailsSent,
+        vouchers_created: vouchersCreated,
+        hours_until_event: hoursUntilEvent.toFixed(1),
+        eligible_for_voucher: eligibleForVoucher,
+        voucher_eligibility: eligibleForVoucher ? 
+          'Participants received vouchers (>24 hours before event)' : 
+          'No vouchers issued (<24 hours before event)'
+      }
+    });
+
+  } catch (error) {
+    console.error('Admin cancellation error:', error);
+    return res.status(500).send({
+      message: error.message || 'Failed to cancel registrations'
+    });
   }
 };
