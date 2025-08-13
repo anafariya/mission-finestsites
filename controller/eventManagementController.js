@@ -291,7 +291,7 @@ exports.cancel = async function (req, res) {
 
         let emailsSent = 0;
         let vouchersCreated = 0;
-        const eligibleForVoucher = hoursUntilEvent > 24;
+        const eligibleForVoucher = true;
         for (const registration of registrations) {
           try {
 
@@ -545,7 +545,7 @@ exports.cancelAllParticipants = async function (req, res) {
 
     let emailsSent = 0;
     let vouchersCreated = 0;
-    const eligibleForVoucher = hoursUntilEvent > 24;
+    const eligibleForVoucher = true;
 
     // Process each registration
     for (const registration of registrations) {
