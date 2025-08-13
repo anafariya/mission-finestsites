@@ -40,7 +40,7 @@ exports.send = async function(data){
 		console.log(transport, process.env.MAILGUN_API_KEY, settings, 'trans');
 		
 
-		// get content from db
+		// get content
 		const content = data.content;
 
 		const html = await createEmail({ template: data.html_template || 'template', content: content || data.content, values: data.content }); // create html template

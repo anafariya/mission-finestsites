@@ -335,26 +335,38 @@ exports.cancel = async function (req, res) {
 
             // Send cancellation email
             try {
-              const emailTemplate = voucherData ? 'event_cancelled_with_voucher' : 'event_cancelled_no_voucher';
               const eventDateFormatted = moment(eventData.date).tz('Europe/Berlin').format('DD.MM.YYYY');
+              let bodyText = voucherData ?
+                `Ihr Event "${eventData.city.name}" am ${eventDateFormatted} wurde leider abgesagt. Da die Absage mehr als 24 Stunden vor dem Event erfolgte, haben wir einen Gutschein für Sie erstellt.` :
+                `Ihr Event "${eventData.city.name}" am ${eventDateFormatted} wurde leider abgesagt. Da die Absage weniger als 24 Stunden vor dem Event erfolgte, kann kein Gutschein ausgestellt werden.`;
 
+              if (voucherData) {
+                const voucherAmountText = voucherData?.amount_off ? `€${(voucherData.amount_off / 100).toFixed(2)}` : null;
+                const voucherExpiryText = voucherData?.redeem_by ? moment.unix(voucherData.redeem_by).format('DD.MM.YYYY') : null;
+                bodyText += `\n\nGutscheincode: ${voucherData.id}`;
+                if (voucherAmountText) bodyText += `\nWert: ${voucherAmountText}`;
+                if (voucherExpiryText) bodyText += `\nGültig bis: ${voucherExpiryText}`;
+              }
+
+              const emailTemplateBase = voucherData ? 'event_cancelled_with_voucher' : 'event_cancelled_no_voucher';
+              const emailTemplate = (userData.locale || 'de').toString().toLowerCase().startsWith('de') 
+                ? `${emailTemplateBase}_de` 
+                : emailTemplateBase;
+              
               await mail.send({
                 to: userData.email,
                 locale: userData.locale || 'de',
-                template: emailTemplate,
+                html_template: emailTemplate,
                 subject: voucherData ? 'Event abgesagt - Gutschein erhalten' : 'Event abgesagt',
-                // Ensure template greeting picks up the user's name
-                name: userData.first_name || userData.name,
                 content: {
-                  first_name: userData.first_name,
+                  name: userData.first_name || userData.name,
+                  body: bodyText,
                   event_name: eventData.city.name,
                   event_date: eventDateFormatted,
                   voucher_code: voucherData?.id,
                   voucher_amount: voucherData ? `€${(voucherData.amount_off / 100).toFixed(2)}` : null,
                   voucher_expiry: voucherData?.redeem_by ? moment.unix(voucherData.redeem_by).format('DD.MM.YYYY') : null,
-                  body: voucherData ?
-                    `Ihr Event "${eventData.city.name}" am ${eventDateFormatted} wurde leider abgesagt. Da die Absage mehr als 24 Stunden vor dem Event erfolgte, haben wir einen Gutschein für Sie erstellt.` :
-                    `Ihr Event "${eventData.city.name}" am ${eventDateFormatted} wurde leider abgesagt. Da die Absage weniger als 24 Stunden vor dem Event erfolgte, kann kein Gutschein ausgestellt werden.`,
+                  body: bodyText,
                   closing: 'Mit freundlichen Grüßen',
                   button: voucherData ? {
                     url: process.env.CLIENT_URL || 'https://app.meetlocal.de',
@@ -587,25 +599,43 @@ exports.cancelAllParticipants = async function (req, res) {
 
         // Send cancellation email
         try {
-          const emailTemplate = voucherData ? 'event_cancelled_with_voucher' : 'event_cancelled_no_voucher';
           const eventDateFormatted = moment(eventData.date).tz('Europe/Berlin').format('DD.MM.YYYY');
 
+          // Build localized body with explicit voucher details when available
+          let bodyText = voucherData ? 
+            `Ihr Event "${eventData.city.name}" am ${eventDateFormatted} wurde leider abgesagt. Da die Absage mehr als 24 Stunden vor dem Event erfolgte, haben wir einen Gutschein für Sie erstellt.` :
+            `Ihr Event "${eventData.city.name}" am ${eventDateFormatted} wurde leider abgesagt. Da die Absage weniger als 24 Stunden vor dem Event erfolgte, kann kein Gutschein ausgestellt werden.`;
+
+          if (voucherData) {
+            const voucherAmountText = voucherData?.amount_off ? `€${(voucherData.amount_off / 100).toFixed(2)}` : null;
+            const voucherExpiryText = voucherData?.redeem_by ? moment.unix(voucherData.redeem_by).format('DD.MM.YYYY') : null;
+            bodyText += `\n\nGutscheincode: ${voucherData.id}`;
+            if (voucherAmountText) bodyText += `\nWert: ${voucherAmountText}`;
+            if (voucherExpiryText) bodyText += `\nGültig bis: ${voucherExpiryText}`;
+          }
+
+          const emailTemplateBase = voucherData ? 'event_cancelled_with_voucher' : 'event_cancelled_no_voucher';
+          const emailTemplate = (userData.locale || 'de').toString().toLowerCase().startsWith('de') 
+            ? `${emailTemplateBase}_de` 
+            : emailTemplateBase;
+          
           await mail.send({
             to: userData.email,
             locale: userData.locale || 'de',
-            template: emailTemplate,
+            html_template: emailTemplate,
             subject: voucherData ? 
               'Event abgesagt - Gutschein erhalten' : 
               'Event abgesagt',
             content: {
-              first_name: userData.first_name,
+              name: userData.first_name || userData.name,
+              body: bodyText,
               event_name: eventData.city.name,
               event_date: eventDateFormatted,
               voucher_code: voucherData?.id,
               voucher_amount: voucherData ? `€${(voucherData.amount_off / 100).toFixed(2)}` : null,
               body: voucherData ? 
-                `Ihr Event "${eventData.city.name}" am ${eventDateFormatted} wurde leider abgesagt. Da die Absage mehr als 24 Stunden vor dem Event erfolgte, haben wir einen Gutschein für Sie erstellt.` :
-                `Ihr Event "${eventData.city.name}" am ${eventDateFormatted} wurde leider abgesagt. Da die Absage weniger als 24 Stunden vor dem Event erfolgte, kann kein Gutschein ausgestellt werden.`,
+                bodyText :
+                bodyText,
               closing: 'Mit freundlichen Grüßen',
               button: voucherData ? {
                 url: process.env.CLIENT_URL || 'https://app.meetlocal.de',
